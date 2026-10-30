@@ -76,7 +76,7 @@ humor-diario/
 - Todas as consultas filtram pelo `userId` do token: cada pessoa acessa apenas os próprios dados.
 - Validação de todas as entradas com **Zod**; cabeçalhos de segurança com **helmet**; **rate limit** (10 tentativas/15 min em login e cadastro).
 - Consentimento explícito registrado com data (`consent_at`), Política de Privacidade em linguagem simples e aviso sobre consentimento dos responsáveis para menores (art. 14).
-- Hospedagem no Railway (servidores nos EUA): a transferência internacional é informada na Política de Privacidade e autorizada no consentimento do cadastro (art. 33, VIII).
+- Hospedagem no Render e na Vercel (servidores nos EUA): a transferência internacional é informada na Política de Privacidade e autorizada no consentimento do cadastro (art. 33, VIII). O banco só aceita conexões da rede interna do Render.
 - Direitos do titular (art. 18): acesso/portabilidade (exportar JSON), correção (editar perfil e registros) e eliminação (excluir conta).
 
 ## Como executar
@@ -111,18 +111,29 @@ npm run dev                 # aplicação em http://localhost:3000
 
 O frontend chama a API pelo caminho `/api/...`, que o próprio Next.js repassa ao backend definido em `BACKEND_URL` (arquivo `frontend/.env.local`). Assim o navegador só conversa com o domínio do frontend e o cookie de sessão funciona em todos os navegadores, inclusive no Safari (iPhone).
 
-## Publicação no Railway
+## Publicação: Render + Vercel
 
-O projeto já está preparado para o [Railway](https://railway.com): cada pasta tem um `railway.json` com os comandos de build, de migração do banco e de inicialização. O resultado será um projeto com três serviços:
+A aplicação é publicada em dois provedores:
 
 ```
-Projeto no Railway
-├── Postgres   → banco de dados
-├── backend    → API (pasta backend/)
-└── frontend   → aplicação web (pasta frontend/)   ← endereço que os usuários acessam
+Usuário ──▶ Vercel (frontend Next.js) ──/api──▶ Render (backend Fastify) ──▶ Render (PostgreSQL)
+            humor-diario.vercel.app             humor-diario-backend.onrender.com   rede interna
 ```
 
-### Passo 1 — Enviar o código para o GitHub
+- **Render**: o arquivo [`render.yaml`](render.yaml) (Blueprint) cria a API e o banco de uma só vez, gera as chaves secretas automaticamente e aplica as migrações a cada deploy.
+- **Vercel**: publica o frontend. As chamadas `/api/...` são repassadas ao Render pelo próprio Next.js, então o navegador só conversa com o domínio da Vercel.
+
+### Custos e limites dos planos gratuitos
+
+| Item | Plano gratuito | Quando pagar |
+| --- | --- | --- |
+| API no Render | Hiberna após 15 min sem acesso; o primeiro acesso depois disso leva ~1 min | Plano **Starter** (~US$ 7/mês) não hiberna |
+| Banco no Render | **Expira 30 dias após a criação** (os dados são apagados) | Para o uso real com participantes, mude para **Basic-256mb** (~US$ 6/mês) antes do vencimento |
+| Frontend na Vercel | Gratuito (plano Hobby) | Não é necessário |
+
+> Para testes e para a apresentação, o plano gratuito é suficiente. Para o período de uso na escola, com registros reais, **não use o banco gratuito**: os dados seriam perdidos após 30 dias.
+
+### Passo 1: enviar o código para o GitHub
 
 Crie um repositório **privado** no GitHub (ex.: `humor-diario`) e, dentro da pasta `humor-diario`:
 
@@ -137,80 +148,62 @@ git push -u origin main
 
 Os arquivos `.env` **não** são enviados (estão no `.gitignore`), pois contêm as chaves secretas.
 
-### Passo 2 — Criar o projeto e o banco
+### Passo 2: criar o backend e o banco no Render
 
-1. Acesse https://railway.com, entre com sua conta do GitHub e assine o plano **Hobby** (US$ 5/mês, com US$ 5 de uso incluídos).
-2. Clique em **New Project → Deploy PostgreSQL**. O serviço `Postgres` é criado.
+1. Acesse https://render.com e entre com sua conta do GitHub.
+2. Clique em **New → Blueprint** e selecione o repositório `humor-diario`.
+3. O Render lê o `render.yaml` e mostra o que será criado: `humor-diario-backend` (web service) e `humor-diario-db` (PostgreSQL).
+4. Ele pede o valor de `FRONTEND_URL`. Se ainda não souber o endereço da Vercel, digite `https://humor-diario.vercel.app` por enquanto (dá para corrigir depois).
+5. Clique em **Deploy Blueprint**. O primeiro deploy cria as tabelas automaticamente.
+6. Ao terminar, copie o endereço do backend (ex.: `https://humor-diario-backend.onrender.com`) e teste `https://<endereço>/health`. Deve responder `{"status":"ok"}`.
 
-### Passo 3 — Criar o serviço do backend
+> ⚠️ **Faça uma cópia de segurança da `ENCRYPTION_KEY`.** Em *humor-diario-backend → Environment*, revele o valor gerado e guarde-o em local seguro (ex.: um gerenciador de senhas). Se ela for perdida, as anotações gravadas não poderão mais ser lidas.
 
-1. No projeto, clique em **+ Create → GitHub Repo** e escolha o repositório `humor-diario`.
-2. Em **Settings** do novo serviço:
-   - renomeie o serviço para **`backend`** (o nome é usado nas variáveis abaixo);
-   - **Source → Root Directory:** `/backend`;
-   - **Config-as-code → Railway Config File:** `/backend/railway.json`;
-   - **Networking → Generate Domain** (gera o endereço público da API).
+### Passo 3: publicar o frontend na Vercel
 
-### Passo 4 — Criar o serviço do frontend
+1. Acesse https://vercel.com, entre com o GitHub e clique em **Add New → Project**.
+2. Importe o repositório `humor-diario`.
+3. Em **Root Directory**, clique em *Edit* e selecione `frontend`. O framework Next.js é detectado sozinho.
+4. Em **Environment Variables**, adicione:
 
-1. Novamente **+ Create → GitHub Repo**, escolhendo o mesmo repositório.
-2. Em **Settings**:
-   - renomeie o serviço para **`frontend`**;
-   - **Root Directory:** `/frontend`;
-   - **Railway Config File:** `/frontend/railway.json`;
-   - **Networking → Generate Domain** — este será o endereço do aplicativo (ex.: `frontend-production-xxxx.up.railway.app`).
+   | Nome | Valor |
+   | --- | --- |
+   | `BACKEND_URL` | o endereço do backend no Render, ex.: `https://humor-diario-backend.onrender.com` |
 
-### Passo 5 — Configurar as variáveis de ambiente
+5. Clique em **Deploy**. Ao final, a Vercel mostra o endereço do aplicativo (ex.: `https://humor-diario.vercel.app`).
 
-Gere **duas chaves novas** (não reutilize as de desenvolvimento), executando o comando abaixo duas vezes:
+### Passo 4: ajustar o endereço do frontend no Render
 
-```bash
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-```
+Se o endereço da Vercel for diferente do que você digitou no Passo 2, atualize `FRONTEND_URL` em *humor-diario-backend → Environment* e salve (o Render reinicia o serviço sozinho).
 
-Na aba **Variables** do serviço **backend**:
+Depois, acesse o endereço da Vercel, crie uma conta e faça um registro de teste.
 
-| Variável | Valor |
-| --- | --- |
-| `DATABASE_URL` | `${{Postgres.DATABASE_URL}}` |
-| `JWT_SECRET` | primeira chave gerada |
-| `ENCRYPTION_KEY` | segunda chave gerada |
-| `NODE_ENV` | `production` |
-| `FRONTEND_URL` | `https://${{frontend.RAILWAY_PUBLIC_DOMAIN}}` |
+A cada `git push` na branch `main`, Render e Vercel publicam a nova versão automaticamente.
 
-Na aba **Variables** do serviço **frontend**:
+### Dica: evitar a espera de ~1 minuto do plano gratuito
 
-| Variável | Valor |
-| --- | --- |
-| `BACKEND_URL` | `https://${{backend.RAILWAY_PUBLIC_DOMAIN}}` |
-
-Os valores entre `${{ }}` são referências que o próprio Railway preenche. Clique em **Deploy** para aplicar as alterações. No primeiro deploy do backend, o comando `npm run db:deploy` cria as tabelas automaticamente.
-
-> ⚠️ **Guarde a `ENCRYPTION_KEY` em local seguro.** Se ela for perdida ou alterada, as anotações já gravadas não poderão mais ser lidas.
-
-### Passo 6 — Testar
-
-- Acesse `https://<domínio do backend>/health` → deve responder `{"status":"ok"}`.
-- Acesse o domínio do **frontend**, crie uma conta e faça um registro.
-
-A cada `git push` na branch `main`, o Railway publica a nova versão automaticamente.
+Cadastre o endereço `https://<backend>.onrender.com/health` em um serviço gratuito de monitoramento, como o [UptimeRobot](https://uptimerobot.com) ou o [cron-job.org](https://cron-job.org), para ser acessado a cada 10 minutos. Assim a API não hiberna. O plano gratuito do Render inclui 750 horas/mês, o suficiente para um serviço ligado o mês todo.
 
 ### Dados de demonstração em produção (opcional)
 
-Para popular o banco de produção com o usuário de demonstração (útil na apresentação), execute localmente, na pasta `backend`, apontando para o banco do Railway. Use o valor de `DATABASE_PUBLIC_URL` do serviço Postgres e a **mesma** `ENCRYPTION_KEY` de produção:
+Por segurança, o banco não aceita conexões pela internet (`ipAllowList: []` no `render.yaml`). Para popular o banco com o usuário de demonstração na apresentação:
 
-```bash
-DATABASE_URL="<DATABASE_PUBLIC_URL do Railway>" ENCRYPTION_KEY="<chave de produção>" npm run db:seed
-```
+1. Em *humor-diario-db → Networking*, libere temporariamente o seu IP.
+2. Na pasta `backend`, execute com a **External Database URL** do banco e a **mesma** `ENCRYPTION_KEY` de produção (no PowerShell):
 
-(No PowerShell, defina antes as variáveis com `$env:DATABASE_URL="..."` e `$env:ENCRYPTION_KEY="..."`.)
+   ```powershell
+   $env:DATABASE_URL="<External Database URL>"; $env:ENCRYPTION_KEY="<chave de produção>"; npm run db:seed
+   ```
+
+3. Remova o seu IP da lista novamente.
 
 ### Solução de problemas
 
 | Sintoma | Causa provável |
 | --- | --- |
-| Backend não inicia: "Variáveis de ambiente inválidas" | Alguma variável do backend está faltando ou o domínio do frontend ainda não foi gerado |
-| Login funciona, mas volta para a tela de login | `BACKEND_URL` incorreta no frontend — corrija e faça **redeploy** (o valor é lido durante o build) |
-| Erro 502 nas chamadas `/api` | Backend fora do ar — veja os logs do serviço `backend` |
+| Backend não inicia: "Variáveis de ambiente inválidas" | Alguma variável faltando em *humor-diario-backend → Environment* |
+| Login funciona, mas volta para a tela de login | `BACKEND_URL` incorreta na Vercel. Corrija e faça **Redeploy** (o valor é lido durante o build) |
+| Erro 502/504 no primeiro acesso | A API do Render estava hibernando. Aguarde ~1 minuto e tente de novo (ou use a dica acima) |
+| O banco sumiu após um mês | O banco gratuito do Render expira em 30 dias. Use o plano Basic para dados reais |
 
 > O Humor Diário é uma ferramenta de autoconhecimento e **não substitui acompanhamento psicológico ou médico**. Precisa conversar? **CVV — 188** (gratuito, 24h).

@@ -1,0 +1,39 @@
+# Blueprint do Render: cria a API (backend) e o banco PostgreSQL em um único passo.
+# O frontend é publicado separadamente na Vercel (ver README).
+services:
+  - type: web
+    name: humor-diario-backend
+    runtime: node
+    rootDir: backend
+    region: virginia # região do Render mais próxima do Brasil
+    plan: free # "starter" (~US$ 7/mês) não hiberna após 15 min sem acesso
+    buildCommand: npm ci && npm run build
+    # Aplica as migrações do banco e inicia a API
+    startCommand: npm run start:prod
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: humor-diario-db
+          property: connectionString
+      # Chaves secretas geradas automaticamente pelo Render (256 bits, base64)
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ENCRYPTION_KEY
+        generateValue: true
+      # Endereço do frontend na Vercel, ex.: https://humor-diario.vercel.app (preenchido no painel)
+      - key: FRONTEND_URL
+        sync: false
+
+databases:
+  - name: humor-diario-db
+    databaseName: humor_diario
+    user: humor_diario
+    region: virginia
+    plan: free # expira em 30 dias! Para o uso real com participantes, troque por "basic-256mb" (~US$ 6/mês)
+    postgresMajorVersion: "16"
+    # Lista vazia: o banco só aceita conexões da rede interna do Render (sem acesso pela internet)
+    ipAllowList: []

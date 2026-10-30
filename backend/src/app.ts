@@ -15,7 +15,7 @@ import { accountRoutes } from './routes/account';
 export async function buildApp() {
   const app = Fastify({
     logger: { level: env.NODE_ENV === 'production' ? 'info' : 'debug', redact: ['req.headers.cookie'] },
-    // Atrás do proxy do Railway e do Next.js: usa o IP real do usuário (X-Forwarded-For) no limite de requisições
+    // Atrás dos proxies da Vercel e do Render: usa o IP real do usuário (X-Forwarded-For) no limite de requisições
     trustProxy: true,
   });
 

@@ -2,7 +2,7 @@ import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto';
 import { env } from '../env';
 
 // AES-256-GCM: garante confidencialidade e integridade das anotações pessoais armazenadas no banco.
-const key = Buffer.from(env.ENCRYPTION_KEY, 'hex');
+const key = env.ENCRYPTION_KEY;
 
 export function encrypt(plainText: string): string {
   const iv = randomBytes(12);

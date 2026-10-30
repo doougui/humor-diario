@@ -41,8 +41,9 @@ const SECTIONS = [
   {
     title: '5. Onde seus dados ficam armazenados',
     items: [
-      'A aplicação e o banco de dados são hospedados no provedor Railway (Railway Corporation), em servidores localizados fora do Brasil (Estados Unidos).',
-      'Essa transferência internacional é realizada com base no seu consentimento específico e em destaque, informado no momento do cadastro (LGPD, art. 33, VIII), e o provedor atua apenas como operador, armazenando os dados sem utilizá-los para outras finalidades.',
+      'A API e o banco de dados são hospedados no provedor Render (Render Services, Inc.), em servidores localizados nos Estados Unidos. O site é entregue pela Vercel (Vercel Inc.), que apenas repassa as requisições à API, sem armazenar seus registros.',
+      'Essa transferência internacional é realizada com base no seu consentimento específico e em destaque, informado no momento do cadastro (LGPD, art. 33, VIII). Os provedores atuam apenas como operadores, sem utilizar os dados para outras finalidades.',
+      'O banco de dados não é acessível pela internet: apenas a API da aplicação consegue se conectar a ele.',
     ],
   },
   {

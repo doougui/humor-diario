@@ -30,7 +30,7 @@ export async function accountRoutes(app: FastifyInstance) {
   app.get('/export', async (request, reply) => {
     const user = await prisma.user.findUniqueOrThrow({
       where: { id: request.user.sub },
-      include: { entries: { orderBy: { date: 'asc' } } },
+      include: { entries: { orderBy: { date: 'asc' } }, feedback: true },
     });
 
     reply.header('Content-Disposition', 'attachment; filename="meus-dados-humor-diario.json"');
@@ -38,6 +38,7 @@ export async function accountRoutes(app: FastifyInstance) {
       exportedAt: new Date().toISOString(),
       user: publicUser(user),
       entries: user.entries.map(serializeEntry),
+      feedback: user.feedback,
     };
   });
 

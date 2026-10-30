@@ -27,6 +27,9 @@ services:
       # Endereço do frontend na Vercel, ex.: https://humor-diario.vercel.app (preenchido no painel)
       - key: FRONTEND_URL
         sync: false
+      # E-mails (separados por vírgula) que podem ver os resultados das avaliações (preenchido no painel)
+      - key: ADMIN_EMAILS
+        sync: false
 
 databases:
   - name: humor-diario-db

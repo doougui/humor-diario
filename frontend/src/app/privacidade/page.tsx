@@ -10,6 +10,7 @@ const SECTIONS = [
       'Dados de cadastro: nome, e-mail, perfil (estudante, professor, funcionário ou comunidade) e senha — armazenada apenas na forma de hash (bcrypt), nunca em texto puro.',
       'Registros diários: humor, nível de energia, horas de sono, emoções, fatores que influenciaram o dia e anotações opcionais.',
       'Data e hora em que você aceitou esta política.',
+      'Avaliação da aplicação (opcional): respostas ao questionário de usabilidade, comentários, seu perfil e a quantidade de registros feitos até o momento da resposta.',
     ],
   },
   {
@@ -19,6 +20,7 @@ const SECTIONS = [
       'Autenticar seu acesso à plataforma.',
       'Os dados não são vendidos, compartilhados com terceiros nem utilizados para publicidade.',
       'Nenhum professor, funcionário ou administrador da escola tem acesso aos seus registros individuais.',
+      'As avaliações da aplicação são usadas, mediante sua autorização, de forma anônima no trabalho acadêmico do projeto. Os responsáveis veem somente resultados agregados e comentários sem nome ou e-mail; estatísticas por perfil só são exibidas quando o grupo tem ao menos 3 respostas.',
     ],
   },
   {
@@ -51,7 +53,7 @@ const SECTIONS = [
     items: [
       'Acessar e baixar todos os seus dados em formato JSON (portabilidade) — na página "Conta".',
       'Corrigir seus dados de cadastro e editar ou excluir qualquer registro diário.',
-      'Revogar o consentimento e excluir sua conta definitivamente, junto com todos os registros — na página "Conta".',
+      'Revogar o consentimento e excluir sua conta definitivamente, junto com todos os registros — na página "Conta". Caso você tenha respondido a avaliação, ela é desvinculada da conta e mantida apenas de forma anônima, para uso no trabalho acadêmico (art. 16, IV).',
     ],
   },
   {

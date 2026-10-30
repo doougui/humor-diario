@@ -12,6 +12,8 @@ Aplicação web para **monitoramento diário de humor e promoção do bem-estar 
 | **Painel de análise** | Períodos de 7 dias, 30 dias, 3 meses e 1 ano: humor médio (com comparação ao período anterior), sequência de dias registrados, adesão, sono médio, gráfico de evolução de humor/energia, distribuição do humor, humor por dia da semana, impacto de cada fator, emoções mais frequentes, relação sono × humor e observações automáticas em linguagem simples. |
 | **Conta (LGPD)** | Edição dos dados, exportação completa em JSON e exclusão definitiva da conta com todos os registros. |
 | **Apoio** | Quando o humor registrado está baixo, a aplicação exibe orientações de apoio (CVV 188, SAMU 192). |
+| **Avaliação** | Questionário de avaliação da aplicação: as 10 afirmações do **System Usability Scale (SUS)**, duas afirmações sobre a utilidade do painel e o autoconhecimento, e comentários abertos. O painel convida a responder quem já tem 3 ou mais registros. |
+| **Resultados (administradores)** | Página `/resultados`, visível só para os e-mails em `ADMIN_EMAILS`: pontuação SUS média com nota (A–F), mediana, desvio padrão, distribuição, média por afirmação, resultados por perfil, distribuição das respostas e comentários anônimos, com exportação em CSV para o Excel. |
 
 ## Arquitetura
 
@@ -68,6 +70,16 @@ humor-diario/
 | PUT | `/account` | Atualiza nome e perfil |
 | GET | `/account/export` | Exporta todos os dados do usuário (JSON) |
 | DELETE | `/account` | Exclui conta e registros (exige senha) |
+| GET | `/feedback/me` | Avaliação enviada pelo próprio usuário |
+| PUT | `/feedback` | Envia ou atualiza a avaliação (exige `researchConsent: true`) |
+| GET | `/feedback/results` | Resultados agregados e anônimos (somente administradores) |
+| GET | `/feedback/export.csv` | Respostas anônimas em CSV (somente administradores) |
+
+### Avaliação da usabilidade (SUS)
+
+A pontuação SUS segue Brooke (1996): nas afirmações ímpares (positivas) soma-se `resposta − 1`, nas pares (negativas) `5 − resposta`, e o total é multiplicado por 2,5, resultando em uma nota de 0 a 100. A classificação usa a escala de Sauro e Lewis (2016): **A** ≥ 80,3 · **B** ≥ 74 · **C** ≥ 68 (média de referência) · **D** ≥ 51 · **F** < 51.
+
+As respostas guardam o perfil do participante e a quantidade de registros de humor no momento da resposta, permitindo cruzar usabilidade com engajamento. Para preservar o anonimato, estatísticas por perfil e o perfil dos comentários só são exibidos quando o grupo tem ao menos 3 respostas. Se o participante excluir a conta, a avaliação é desvinculada e mantida de forma anônima.
 
 ### Segurança e LGPD
 
@@ -78,6 +90,7 @@ humor-diario/
 - Consentimento explícito registrado com data (`consent_at`), Política de Privacidade em linguagem simples e aviso sobre consentimento dos responsáveis para menores (art. 14).
 - Hospedagem no Render e na Vercel (servidores nos EUA): a transferência internacional é informada na Política de Privacidade e autorizada no consentimento do cadastro (art. 33, VIII). O banco só aceita conexões da rede interna do Render.
 - Direitos do titular (art. 18): acesso/portabilidade (exportar JSON), correção (editar perfil e registros) e eliminação (excluir conta).
+- Avaliações usadas no trabalho somente com autorização explícita e de forma anônima; administradores não têm acesso a nenhum registro de humor.
 
 ## Como executar
 
@@ -153,7 +166,9 @@ Os arquivos `.env` **não** são enviados (estão no `.gitignore`), pois contêm
 1. Acesse https://render.com e entre com sua conta do GitHub.
 2. Clique em **New → Blueprint** e selecione o repositório `humor-diario`.
 3. O Render lê o `render.yaml` e mostra o que será criado: `humor-diario-backend` (web service) e `humor-diario-db` (PostgreSQL).
-4. Ele pede o valor de `FRONTEND_URL`. Se ainda não souber o endereço da Vercel, digite `https://humor-diario.vercel.app` por enquanto (dá para corrigir depois).
+4. Ele pede dois valores:
+   - `FRONTEND_URL`: se ainda não souber o endereço da Vercel, digite `https://humor-diario.vercel.app` por enquanto (dá para corrigir depois);
+   - `ADMIN_EMAILS`: o(s) e-mail(s) de quem poderá ver os resultados das avaliações em `/resultados`, separados por vírgula. Use o mesmo e-mail com que você vai se cadastrar na aplicação.
 5. Clique em **Deploy Blueprint**. O primeiro deploy cria as tabelas automaticamente.
 6. Ao terminar, copie o endereço do backend (ex.: `https://humor-diario-backend.onrender.com`) e teste `https://<endereço>/health`. Deve responder `{"status":"ok"}`.
 

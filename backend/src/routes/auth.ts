@@ -29,6 +29,7 @@ export function publicUser(user: User) {
     role: user.role,
     consentAt: user.consentAt,
     createdAt: user.createdAt,
+    isAdmin: env.ADMIN_EMAILS.includes(user.email),
   };
 }
 

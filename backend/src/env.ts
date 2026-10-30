@@ -20,6 +20,16 @@ const envSchema = z.object({
     return key;
   }),
   FRONTEND_URL: z.string().url().default('http://localhost:3000'),
+  // E-mails (separados por vírgula) que podem ver os resultados agregados das avaliações
+  ADMIN_EMAILS: z
+    .string()
+    .default('')
+    .transform((value) =>
+      value
+        .split(',')
+        .map((email) => email.trim().toLowerCase())
+        .filter(Boolean),
+    ),
   PORT: z.coerce.number().default(3333),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 });

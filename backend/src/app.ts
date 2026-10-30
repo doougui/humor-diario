@@ -11,6 +11,7 @@ import { authRoutes } from './routes/auth';
 import { entryRoutes } from './routes/entries';
 import { analyticsRoutes } from './routes/analytics';
 import { accountRoutes } from './routes/account';
+import { feedbackRoutes } from './routes/feedback';
 
 export async function buildApp() {
   const app = Fastify({
@@ -69,6 +70,7 @@ export async function buildApp() {
   await app.register(entryRoutes, { prefix: '/entries' });
   await app.register(analyticsRoutes, { prefix: '/analytics' });
   await app.register(accountRoutes, { prefix: '/account' });
+  await app.register(feedbackRoutes, { prefix: '/feedback' });
 
   return app;
 }

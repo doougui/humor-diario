@@ -26,8 +26,35 @@ model User {
   createdAt    DateTime    @default(now()) @map("created_at")
   updatedAt    DateTime    @updatedAt @map("updated_at")
   entries      MoodEntry[]
+  feedback     Feedback?
 
   @@map("users")
+}
+
+/// Avaliação da aplicação respondida pelo usuário (uma por usuário, pode ser atualizada).
+/// Ao excluir a conta, a avaliação é mantida de forma anônima (user_id passa a ser nulo).
+model Feedback {
+  id            String   @id @default(uuid())
+  userId        String?  @unique @map("user_id")
+  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  /// Perfil do participante no momento da resposta
+  role          Role
+  /// Respostas às 10 afirmações do System Usability Scale (1 = discordo totalmente, 5 = concordo totalmente)
+  susAnswers    Int[]    @map("sus_answers")
+  /// Pontuação SUS de 0 a 100
+  susScore      Float    @map("sus_score")
+  /// "Os gráficos e indicadores do painel foram úteis" (1 a 5)
+  usefulness    Int
+  /// "A aplicação me ajudou a perceber padrões nas minhas emoções" (1 a 5)
+  selfAwareness Int      @map("self_awareness")
+  /// Quantidade de registros de humor do usuário no momento da resposta
+  entriesCount  Int      @map("entries_count")
+  liked         String?
+  improve       String?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("feedbacks")
 }
 
 /// Registro diário de humor (um por usuário por dia)

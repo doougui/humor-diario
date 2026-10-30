@@ -19,7 +19,32 @@ import { Alert, PageHeader, Spinner, SupportCard } from '@/components/ui';
 import { api, errorMessage } from '@/lib/api';
 import { MOODS, emotionInfo, factorInfo, moodInfo } from '@/lib/constants';
 import { formatShort, todayISO } from '@/lib/dates';
-import type { Summary } from '@/lib/types';
+import type { Feedback, Summary } from '@/lib/types';
+
+// Convida quem já usou a aplicação por alguns dias e ainda não respondeu a avaliação
+function FeedbackInvite() {
+  const [pending, setPending] = useState(false);
+
+  useEffect(() => {
+    api<{ feedback: Feedback | null }>('/feedback/me')
+      .then(({ feedback }) => setPending(!feedback))
+      .catch(() => setPending(false));
+  }, []);
+
+  if (!pending) return null;
+
+  return (
+    <section className="card flex flex-col gap-3 border-brand-200 bg-gradient-to-r from-brand-50 to-white sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <h2 className="font-semibold text-slate-900">💬 Ajude a melhorar o Humor Diário</h2>
+        <p className="mt-0.5 text-sm text-slate-600">Responda uma avaliação rápida e anônima sobre a aplicação (cerca de 3 minutos).</p>
+      </div>
+      <Link href="/feedback" className="btn-primary shrink-0">
+        Avaliar agora
+      </Link>
+    </section>
+  );
+}
 
 const PERIODS = [
   { days: 7, label: '7 dias' },
@@ -115,6 +140,8 @@ function Dashboard({ summary }: { summary: Summary }) {
         <StatCard label="Sequência atual" value={`🔥 ${stats.streak}`} hint={stats.streak === 1 ? 'dia seguido' : 'dias seguidos'} />
         <StatCard label="Sono médio" value={fmt(stats.sleepAverage, 'h')} hint={`Energia média: ${fmt(stats.energyAverage)}`} />
       </div>
+
+      {stats.entries >= 3 && <FeedbackInvite />}
 
       {summary.insights.length > 0 && (
         <section className="card border-brand-200 bg-brand-50/60">

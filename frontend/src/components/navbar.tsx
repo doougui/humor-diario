@@ -9,8 +9,11 @@ const LINKS = [
   { href: '/registro', label: 'Registrar', icon: '✏️' },
   { href: '/historico', label: 'Histórico', icon: '📅' },
   { href: '/painel', label: 'Painel', icon: '📊' },
+  { href: '/feedback', label: 'Avaliar', icon: '💬' },
   { href: '/conta', label: 'Conta', icon: '👤' },
 ];
+
+const ADMIN_LINKS = [{ href: '/resultados', label: 'Resultados', icon: '📋' }];
 
 export function Navbar() {
   const pathname = usePathname();
@@ -35,7 +38,7 @@ export function Navbar() {
       </div>
       <nav aria-label="Navegação principal" className="mx-auto max-w-5xl px-2 sm:px-4">
         <ul className="flex gap-1 overflow-x-auto">
-          {LINKS.map((link) => {
+          {[...LINKS, ...(user?.isAdmin ? ADMIN_LINKS : [])].map((link) => {
             const active = pathname.startsWith(link.href);
             return (
               <li key={link.href}>

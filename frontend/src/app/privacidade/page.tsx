@@ -53,6 +53,7 @@ const SECTIONS = [
     items: [
       'Acessar e baixar todos os seus dados em formato JSON (portabilidade) — na página "Conta".',
       'Corrigir seus dados de cadastro e editar ou excluir qualquer registro diário.',
+      'Alterar ou excluir sua avaliação da aplicação a qualquer momento, retirando a autorização de uso no trabalho acadêmico — na página "Avaliar".',
       'Revogar o consentimento e excluir sua conta definitivamente, junto com todos os registros — na página "Conta". Caso você tenha respondido a avaliação, ela é desvinculada da conta e mantida apenas de forma anônima, para uso no trabalho acadêmico (art. 16, IV).',
     ],
   },

@@ -32,6 +32,8 @@ export default function FeedbackPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [sent, setSent] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleted, setDeleted] = useState(false);
 
   useEffect(() => {
     api<{ feedback: Feedback | null }>('/feedback/me')
@@ -81,12 +83,31 @@ export default function FeedbackPage() {
         }),
       });
       setExisting(feedback);
+      setDeleted(false);
       setSent(true);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
       setError(errorMessage(err));
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleDelete() {
+    if (!window.confirm('Deseja excluir sua avaliação? Ela deixará de fazer parte dos resultados do projeto.')) return;
+    setDeleting(true);
+    setError('');
+    try {
+      await api('/feedback', { method: 'DELETE' });
+      setExisting(null);
+      setForm(EMPTY_FORM);
+      setConsent(false);
+      setDeleted(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -122,11 +143,22 @@ export default function FeedbackPage() {
       />
 
       <form onSubmit={handleSubmit} className="space-y-5">
+        {deleted && <Alert type="success">Sua avaliação foi excluída e não faz mais parte dos resultados.</Alert>}
         {existing && (
-          <Alert type="info">
-            Você já enviou sua avaliação em {new Date(existing.updatedAt).toLocaleDateString('pt-BR')}. Pode alterar suas
-            respostas e enviar novamente.
-          </Alert>
+          <div className="flex flex-col gap-3 rounded-xl border border-brand-200 bg-brand-50 px-4 py-3 text-sm text-brand-800 sm:flex-row sm:items-center sm:justify-between">
+            <p>
+              Você já enviou sua avaliação em {new Date(existing.updatedAt).toLocaleDateString('pt-BR')}. Pode alterar suas
+              respostas e enviar novamente.
+            </p>
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={deleting}
+              className="shrink-0 rounded-lg px-3 py-1.5 font-medium text-rose-700 hover:bg-rose-50 disabled:opacity-60"
+            >
+              {deleting ? 'Excluindo...' : 'Excluir minha avaliação'}
+            </button>
+          </div>
         )}
 
         <section className="card">

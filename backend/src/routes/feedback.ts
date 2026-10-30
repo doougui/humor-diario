@@ -135,6 +135,15 @@ export async function feedbackRoutes(app: FastifyInstance) {
     return { feedback: serializeOwnFeedback(feedback) };
   });
 
+  // Exclui a própria avaliação (revogação da autorização de uso na pesquisa — LGPD, art. 8º, § 5º)
+  app.delete('/', async (request, reply) => {
+    const { count } = await prisma.feedback.deleteMany({ where: { userId: request.user.sub } });
+    if (count === 0) {
+      return reply.code(404).send({ message: 'Você ainda não enviou uma avaliação.' });
+    }
+    return reply.code(204).send();
+  });
+
   // Resultados agregados e anônimos (somente administradores)
   app.get('/results', { preHandler: [requireAdmin] }, async () => {
     const feedbacks = await prisma.feedback.findMany({ orderBy: { createdAt: 'desc' } });

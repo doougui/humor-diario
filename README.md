@@ -72,6 +72,7 @@ humor-diario/
 | DELETE | `/account` | Exclui conta e registros (exige senha) |
 | GET | `/feedback/me` | Avaliação enviada pelo próprio usuário |
 | PUT | `/feedback` | Envia ou atualiza a avaliação (exige `researchConsent: true`) |
+| DELETE | `/feedback` | Exclui a própria avaliação (revoga a autorização de uso na pesquisa) |
 | GET | `/feedback/results` | Resultados agregados e anônimos (somente administradores) |
 | GET | `/feedback/export.csv` | Respostas anônimas em CSV (somente administradores) |
 
@@ -90,7 +91,7 @@ As respostas guardam o perfil do participante e a quantidade de registros de hum
 - Consentimento explícito registrado com data (`consent_at`), Política de Privacidade em linguagem simples e aviso sobre consentimento dos responsáveis para menores (art. 14).
 - Hospedagem no Render e na Vercel (servidores nos EUA): a transferência internacional é informada na Política de Privacidade e autorizada no consentimento do cadastro (art. 33, VIII). O banco só aceita conexões da rede interna do Render.
 - Direitos do titular (art. 18): acesso/portabilidade (exportar JSON), correção (editar perfil e registros) e eliminação (excluir conta).
-- Avaliações usadas no trabalho somente com autorização explícita e de forma anônima; administradores não têm acesso a nenhum registro de humor.
+- Avaliações usadas no trabalho somente com autorização explícita e de forma anônima; o participante pode excluir a própria avaliação a qualquer momento, e administradores não têm acesso a nenhum registro de humor.
 
 ## Como executar
 

@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Perfil do participante na comunidade escolar
+enum Role {
+  ESTUDANTE
+  PROFESSOR
+  FUNCIONARIO
+  COMUNIDADE
+}
+
+model User {
+  id           String      @id @default(uuid())
+  name         String
+  email        String      @unique
+  passwordHash String      @map("password_hash")
+  role         Role        @default(ESTUDANTE)
+  /// Data em que o usuário consentiu com a Política de Privacidade (LGPD, art. 7º I e art. 11 I)
+  consentAt    DateTime    @map("consent_at")
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+  entries      MoodEntry[]
+
+  @@map("users")
+}
+
+/// Registro diário de humor (um por usuário por dia)
+model MoodEntry {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date       DateTime @db.Date
+  /// Humor de 1 (muito mal) a 5 (muito bem)
+  mood       Int
+  /// Energia de 1 (muito baixa) a 5 (muito alta)
+  energy     Int
+  sleepHours Float?   @map("sleep_hours")
+  emotions   String[]
+  factors    String[]
+  /// Anotação livre, armazenada criptografada (AES-256-GCM)
+  note       String?
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, date])
+  @@map("mood_entries")
+}
